@@ -64,31 +64,47 @@ class SmartLoader(object):
         v = None
         try:
             options = self._options
+            setPrc = options.ratio
             v = VBucketAwareCouchbaseClient(self._server, options.bucket, options.password, options.verbose)
             number_of_items = (int(options.items) / int(options.num_of_threads))
             value = StringUtil.create_value("*", int(options.value_size))
             for i in range(0, number_of_items):
                 if self.shut_down:
+                    print "shut down"
                     break
                 key = "{0}-{1}".format(options.key_prefix, str(uuid.uuid4())[:5])
-                if options.load_json:
-                    document = "\"name\":\"pymc-{0}\"".format(key, key)
-                    document = document + ",\"age\":{0}".format(random.randint(0, 1000))
-                    document = document + ",\"index\":{0}".format(i)
-                    document = "{" + document + "}"
-                    try:
-                        self._profile_before()
-                        v.set(key, 0, 0, document)
-                        self._profile_after()
-                    except MemcachedTimeoutException:
-                        self._stats["timeouts"] += 1
+                if random.randint(0,100) < setPrc:
+                    if options.load_json:
+                        document = "\"name\":\"pymc-{0}\"".format(key, key)
+                        document = document + ",\"age\":{0}".format(random.randint(0, 1000))
+                        document = document + ",\"index\":{0}".format(i)
+                        document = "{" + document + "}"
+                        try:
+                            self._profile_before()
+                            v.set(key, 0, 0, document)
+                            self._profile_after()
+                        except MemcachedTimeoutException:
+                            self._stats["timeouts"] += 1
+                        except Exception as e:
+                            print e
+                    else:
+                        try:
+                            self._profile_before()
+                            v.set(key, 0, 0, value)
+                            self._profile_after()
+                        except MemcachedTimeoutException:
+                            self._stats["timeouts"] += 1
+                        except Exception as e:
+                            print e
                 else:
                     try:
                         self._profile_before()
-                        v.set(key, 0, 0, value)
+                        v.get(key)
                         self._profile_after()
-                    except MemcachedTimeoutException:
+                    except MemcachedtimeoutException:
                         self._stats["timeouts"] += 1
+                    except Exception as e:
+                        print e
                 self._bar.update()
             v.done()
             v = None
@@ -131,20 +147,20 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-n", "--node", dest="node",
                       help="node's ns_server ip:port", metavar="192.168.1.1:8091")
-    parser.add_option("-u", "--user", dest="username",
-                      help="node username", metavar="Administrator", default="Administrator")
-    parser.add_option("-p", "--password", dest="password",
-                      help="node password", metavar="asdasd")
     parser.add_option("-b", "--bucket", dest="bucket", help="which bucket to insert data",
                       default="default", metavar="default")
+    parser.add_option("-p", "--password", dest="password",
+                      help="bucket password", metavar=" 	")
     parser.add_option("-j", "--json", dest="load_json", help="insert json data",
                       default=False, metavar="True")
-
     parser.add_option("-v", "--verbose", dest="verbose", help="run in verbose mode",
                       default=False, metavar="False")
 
     parser.add_option("-i", "--items", dest="items", help="number of items to be inserted",
                       default=100, metavar="100")
+
+    parser.add_option("-r", "--ratio", dest="ratio", help="set get operation ratio",
+                      default=33, metavar="33")
 
     parser.add_option("--size", dest="value_size", help="value size,default is 256 byte",
                       default=512, metavar="100")
