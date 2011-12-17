@@ -4,9 +4,9 @@ default:
 
 pythonlibdir=$(libdir)/python
 
-pythonlib_SCRIPTS= workload-generator
+pythonlib_SCRIPTS= cbworkloadgen
 
-PYTHON_TOOLS= wrapper/workload-generator
+PYTHON_TOOLS= wrapper/cbworkloadgen
 
 ${PYTHON_TOOLS}: wrapper/wrapper
 	cp $< $@
