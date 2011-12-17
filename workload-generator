@@ -146,7 +146,7 @@ class SmartLoader(object):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-n", "--node", dest="node",
-                      help="node's ns_server ip:port", metavar="192.168.1.1:8091")
+                      help="node's ns_server ip:port", metavar="127.0.0.1:8091")
     parser.add_option("-b", "--bucket", dest="bucket", help="which bucket to insert data",
                       default="default", metavar="default")
     parser.add_option("-p", "--password", dest="password",
@@ -160,7 +160,7 @@ if __name__ == "__main__":
                       default=100, metavar="100")
 
     parser.add_option("-r", "--ratio", dest="ratio", help="set get operation ratio",
-                      default=33, metavar="33")
+                      default=77, metavar="77")
 
     parser.add_option("--size", dest="value_size", help="value size,default is 256 byte",
                       default=512, metavar="100")
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
     if not node:
         parser.print_help()
-        exit()
+        sys.exit()
         #if port is not given use :8091
     if node.find(":") == -1:
         hostname = node
