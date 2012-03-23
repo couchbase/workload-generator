@@ -160,13 +160,10 @@ if __name__ == "__main__":
                       default=100, metavar="100")
 
     parser.add_option("-r", "--ratio", dest="ratio", help="set get operation ratio",
-                      default=77, metavar="77")
+                      default=90, metavar="90")
 
     parser.add_option("--size", dest="value_size", help="value size,default is 256 byte",
                       default=512, metavar="100")
-
-    parser.add_option("--threads", dest="num_of_threads", help="number of threads to run load",
-                      default=1, metavar="100")
 
     parser.add_option("--prefix", dest="key_prefix",
                       help="prefix to use for memcached keys and json _ids,default is uuid string",
@@ -190,7 +187,7 @@ if __name__ == "__main__":
     v = None
     workers = []
     try:
-        no_threads = options.num_of_threads
+        no_threads = 1
         number_of_items = int(options.items)
         sharedProgressBar = SharedProgressBar(number_of_items)
         for i in range(0, int(no_threads)):
