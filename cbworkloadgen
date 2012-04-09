@@ -150,7 +150,7 @@ if __name__ == "__main__":
     parser.add_option("-b", "--bucket", dest="bucket", help="which bucket to insert data",
                       default="default", metavar="default")
     parser.add_option("-p", "--password", dest="password",
-                      help="bucket password", metavar=" 	")
+                      help="bucket password", metavar="     ")
     parser.add_option("-j", "--json", dest="load_json", help="insert json data",
                       default=False, metavar="True")
     parser.add_option("-v", "--verbose", dest="verbose", help="run in verbose mode",
@@ -187,10 +187,10 @@ if __name__ == "__main__":
     v = None
     workers = []
     try:
-        no_threads = 1
+        options.num_of_threads = 1
         number_of_items = int(options.items)
         sharedProgressBar = SharedProgressBar(number_of_items)
-        for i in range(0, int(no_threads)):
+        for i in range(0, int(options.num_of_threads)):
             worker = SmartLoader(options, server, sharedProgressBar, i)
             worker.start()
             workers.append(worker)
