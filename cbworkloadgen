@@ -72,12 +72,12 @@ class SmartLoader(object):
                 if self.shut_down:
                     print "shut down"
                     break
-                key = "{0}-{1}".format(options.key_prefix, str(uuid.uuid4())[:5])
+                key = "%s-%s" % (options.key_prefix, str(uuid.uuid4())[:5])
                 if random.randint(0,100) < setPrc:
                     if options.load_json:
-                        document = "\"name\":\"pymc-{0}\"".format(key, key)
-                        document = document + ",\"age\":{0}".format(random.randint(0, 1000))
-                        document = document + ",\"index\":{0}".format(i)
+                        document = "\"name\":\"pymc-%s\"" % (key, key)
+                        document = document + ",\"age\":%s" % (random.randint(0, 1000))
+                        document = document + ",\"index\":%s" % (i)
                         document = "{" + document + "}"
                         try:
                             self._profile_before()
@@ -85,8 +85,8 @@ class SmartLoader(object):
                             self._profile_after()
                         except MemcachedTimeoutException:
                             self._stats["timeouts"] += 1
-                        except Exception as e:
-                            print e
+                        except Exception, e:
+                            print "general exception... ",e
                     else:
                         try:
                             self._profile_before()
@@ -94,8 +94,8 @@ class SmartLoader(object):
                             self._profile_after()
                         except MemcachedTimeoutException:
                             self._stats["timeouts"] += 1
-                        except Exception as e:
-                            print e
+                        except Exception, e:
+                            print "general exception... ",e
                 else:
                     try:
                         self._profile_before()
@@ -103,8 +103,8 @@ class SmartLoader(object):
                         self._profile_after()
                     except MemcachedtimeoutException:
                         self._stats["timeouts"] += 1
-                    except Exception as e:
-                        print e
+                    except Exception, e:
+                        print "general exception... ",e
                 self._bar.update()
             v.done()
             v = None
@@ -113,16 +113,16 @@ class SmartLoader(object):
                 v.done()
 
     def print_stats(self):
-        msg = "Thread {0} - average set time : {1} seconds , min : {2} seconds , max : {3} seconds , operation timeouts {4}"
+        msg = "Thread %s - average set time : %s seconds , min : %s seconds , max : %s seconds , operation timeouts %s"
         if self._stats["samples"]:
-            print msg.format(self._thread_id, self._stats["total_time"] / self._stats["samples"],
+            print msg % (self._thread_id, self._stats["total_time"] / self._stats["samples"],
                              self._stats["min"], self._stats["max"], self._stats["timeouts"])
 
     def wait(self, block=False):
         if block:
             self._thread.join()
         else:
-            return not self._thread.is_alive()
+            return not self._thread.isAlive()
 
 
     def stop(self):
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     else:
         hostname = node[:node.find(":")]
         port = node[node.find(":") + 1:]
-    server = "http://{0}:{1}/pools/default".format(hostname, port)
+    server = "http://%s:%s/pools/default" % (hostname, port)
     v = None
     workers = []
     try:
@@ -205,7 +205,7 @@ if __name__ == "__main__":
         sharedProgressBar.flush()
         for worker in workers:
             worker.print_stats()
-    except :
-        print ""
+    except Exception, e:
+        print e
         for worker in workers:
             worker.stop()
