@@ -18,10 +18,10 @@
 
 import random
 from threading import Thread
-import uuid
+import datetime
 import time
 from couchbase.exception import MemcachedTimeoutException
-from couchbase.couchbaseclient import VBucketAwareCouchbaseClient
+from couchbase.couchbaseclient import CouchbaseClient
 from optparse import OptionParser
 from couchbase.util import ProgressBar, StringUtil
 import sys
@@ -65,7 +65,7 @@ class SmartLoader(object):
         try:
             options = self._options
             setPrc = options.ratio
-            v = VBucketAwareCouchbaseClient(self._server, options.bucket, options.password, options.verbose)
+            v = CouchbaseClient(self._server, options.bucket, options.password, options.verbose)
             number_of_items = (int(options.items) / int(options.num_of_threads))
             value = StringUtil.create_value("*", int(options.value_size))
             for i in range(0, number_of_items):
@@ -166,8 +166,8 @@ if __name__ == "__main__":
                       default=512, metavar="100")
 
     parser.add_option("--prefix", dest="key_prefix",
-                      help="prefix to use for memcached keys and json _ids,default is uuid string",
-                      default=str(uuid.uuid4())[:5], metavar="pymc")
+                      help="prefix to use for memcached keys and json _ids,default is random datetime string",
+                      default=str(datetime.datetime.now().microsecond)[:5], metavar="pymc")
 
     options, args = parser.parse_args()
 
