@@ -25,6 +25,8 @@ from couchbase.couchbaseclient import CouchbaseClient
 from optparse import OptionParser
 from couchbase.util import ProgressBar, StringUtil
 import sys
+import uuid
+import traceback
 
 class SharedProgressBar(object):
     def __init__(self, number_of_items):
@@ -75,7 +77,7 @@ class SmartLoader(object):
                 key = "%s-%s" % (options.key_prefix, str(uuid.uuid4())[:5])
                 if random.randint(0,100) < setPrc:
                     if options.load_json:
-                        document = "\"name\":\"pymc-%s\"" % (key, key)
+                        document = "\"name\":\"pymc-%s\"" % key
                         document = document + ",\"age\":%s" % (random.randint(0, 1000))
                         document = document + ",\"index\":%s" % (i)
                         document = "{" + document + "}"
@@ -109,6 +111,7 @@ class SmartLoader(object):
             v.done()
             v = None
         except:
+            traceback.print_exec()
             if v:
                 v.done()
 
