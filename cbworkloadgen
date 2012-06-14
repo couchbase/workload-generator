@@ -111,7 +111,7 @@ class SmartLoader(object):
             v.done()
             v = None
         except:
-            traceback.print_exec()
+            traceback.print_exc()
             if v:
                 v.done()
 
