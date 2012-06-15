@@ -1,4 +1,7 @@
-COUCHBASE_PYTHON_LIB = ../couchbase-python-client/couchbase
+COUCHBASE_PYTHON_CLIENT = ../couchbase-python-client/couchbase \
+                          ../couchbase-python-client/httplib2 \
+                          ../couchbase-python-client/simplejson \
+                          ../couchbase-python-client/uuid.py
 
 default:
 
@@ -17,6 +20,6 @@ bin_SCRIPTS = ${PYTHON_TOOLS}
 EXTRA_DIST = $(pythonlib_SCRIPTS)
 
 install-data-hook:
-	cp -rf $(COUCHBASE_PYTHON_LIB) $(pythonlibdir)
+	cp -rf $(COUCHBASE_PYTHON_CLIENT) $(pythonlibdir)
 
 
