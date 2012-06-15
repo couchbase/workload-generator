@@ -103,7 +103,7 @@ class SmartLoader(object):
                         self._profile_before()
                         v.get(key)
                         self._profile_after()
-                    except MemcachedtimeoutException:
+                    except MemcachedTimeoutException:
                         self._stats["timeouts"] += 1
                     except Exception, e:
                         print "general exception... ",e
