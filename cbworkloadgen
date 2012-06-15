@@ -28,6 +28,7 @@ import sys
 import uuid
 import traceback
 
+
 class SharedProgressBar(object):
     def __init__(self, number_of_items):
         self.bar = ProgressBar(0, number_of_items, 77)
@@ -48,13 +49,15 @@ class SharedProgressBar(object):
         sys.stdout.write(str(self.bar) + '\r')
         sys.stdout.flush()
 
+
 class SmartLoader(object):
     def __init__(self, options, server, sharedProgressBar, thread_id):
         self._options = options
         self._server = server
         self._thread = None
         self.shut_down = False
-        self._stats = {"total_time": 0, "max": 0, "min": 1 * 1000 * 1000, "samples": 0, "timeouts": 0}
+        self._stats = {"total_time": 0, "max": 0, "min": 1 * 1000 * 1000,
+                       "samples": 0, "timeouts": 0}
         self._bar = sharedProgressBar
         self._thread_id = thread_id
 
@@ -67,20 +70,21 @@ class SmartLoader(object):
         try:
             options = self._options
             setPrc = options.ratio
-            v = CouchbaseClient(self._server, options.bucket, options.password, options.verbose)
-            number_of_items = (int(options.items) / int(options.num_of_threads))
+            v = CouchbaseClient(self._server, options.bucket, options.password,
+                                options.verbose)
+            number_of_items = (int(options.items)
+                               / int(options.num_of_threads))
             value = StringUtil.create_value("*", int(options.value_size))
             for i in range(0, number_of_items):
                 if self.shut_down:
                     print "shut down"
                     break
                 key = "%s-%s" % (options.key_prefix, str(uuid.uuid4())[:5])
-                if random.randint(0,100) < setPrc:
+                if random.randint(0, 100) < setPrc:
                     if options.load_json:
-                        document = "\"name\":\"pymc-%s\"" % key
-                        document = document + ",\"age\":%s" % (random.randint(0, 1000))
-                        document = document + ",\"index\":%s" % (i)
-                        document = "{" + document + "}"
+                        document = '{"name": "pymc-%s", "age": %s, \
+                                    "index": %s}'
+                        document = document % (key, random.randint(0, 1000), i)
                         try:
                             self._profile_before()
                             v.set(key, 0, 0, document)
@@ -88,7 +92,7 @@ class SmartLoader(object):
                         except MemcachedTimeoutException:
                             self._stats["timeouts"] += 1
                         except Exception, e:
-                            print "general exception... ",e
+                            print "general exception... ", e
                     else:
                         try:
                             self._profile_before()
@@ -97,7 +101,7 @@ class SmartLoader(object):
                         except MemcachedTimeoutException:
                             self._stats["timeouts"] += 1
                         except Exception, e:
-                            print "general exception... ",e
+                            print "general exception... ", e
                 else:
                     try:
                         self._profile_before()
@@ -106,7 +110,7 @@ class SmartLoader(object):
                     except MemcachedTimeoutException:
                         self._stats["timeouts"] += 1
                     except Exception, e:
-                        print "general exception... ",e
+                        print "general exception... ", e
                 self._bar.update()
             v.done()
             v = None
@@ -116,17 +120,19 @@ class SmartLoader(object):
                 v.done()
 
     def print_stats(self):
-        msg = "Thread %s - average set time : %s seconds , min : %s seconds , max : %s seconds , operation timeouts %s"
+        msg = '''Thread %s - average set time : %s seconds , min : %s seconds,
+                 max : %s seconds , operation timeouts %s'''
         if self._stats["samples"]:
-            print msg % (self._thread_id, self._stats["total_time"] / self._stats["samples"],
-                             self._stats["min"], self._stats["max"], self._stats["timeouts"])
+            print msg % (self._thread_id,
+                         self._stats["total_time"] / self._stats["samples"],
+                         self._stats["min"], self._stats["max"],
+                         self._stats["timeouts"])
 
     def wait(self, block=False):
         if block:
             self._thread.join()
         else:
             return not self._thread.isAlive()
-
 
     def stop(self):
         self.shut_down = True
@@ -149,28 +155,37 @@ class SmartLoader(object):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-n", "--node", dest="node",
-                      help="node's ns_server ip:port", metavar="127.0.0.1:8091")
-    parser.add_option("-b", "--bucket", dest="bucket", help="which bucket to insert data",
+                      help="node's ns_server ip:port",
+                      metavar="127.0.0.1:8091")
+    parser.add_option("-b", "--bucket", dest="bucket",
+                      help="which bucket to insert data",
                       default="default", metavar="default")
     parser.add_option("-p", "--password", dest="password",
                       help="bucket password", metavar="     ")
-    parser.add_option("-j", "--json", dest="load_json", help="insert json data",
+    parser.add_option("-j", "--json", dest="load_json",
+                      help="insert json data",
                       default=False, metavar="True")
-    parser.add_option("-v", "--verbose", dest="verbose", help="run in verbose mode",
+    parser.add_option("-v", "--verbose", dest="verbose",
+                      help="run in verbose mode",
                       default=False, metavar="False")
 
-    parser.add_option("-i", "--items", dest="items", help="number of items to be inserted",
+    parser.add_option("-i", "--items", dest="items",
+                      help="number of items to be inserted",
                       default=100, metavar="100")
 
-    parser.add_option("-r", "--ratio", dest="ratio", help="set get operation ratio",
+    parser.add_option("-r", "--ratio", dest="ratio",
+                      help="set get operation ratio",
                       default=90, metavar="90")
 
-    parser.add_option("--size", dest="value_size", help="value size,default is 256 byte",
+    parser.add_option("--size", dest="value_size",
+                      help="value size,default is 256 byte",
                       default=512, metavar="100")
 
     parser.add_option("--prefix", dest="key_prefix",
-                      help="prefix to use for memcached keys and json _ids,default is random datetime string",
-                      default=str(datetime.datetime.now().microsecond)[:5], metavar="pymc")
+                      help="prefix to use for memcached keys and json _ids, \
+                            default is random datetime string",
+                      default=str(datetime.datetime.now().microsecond)[:5],
+                      metavar="pymc")
 
     options, args = parser.parse_args()
 
