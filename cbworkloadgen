@@ -27,7 +27,7 @@ from couchbase.util import ProgressBar, StringUtil
 import sys
 import uuid
 import traceback
-
+import StringIO
 
 class SharedProgressBar(object):
     def __init__(self, number_of_items):
@@ -69,18 +69,24 @@ class SmartLoader(object):
         v = None
         try:
             options = self._options
-            setPrc = options.ratio
+            number_of_items = int(options.items) / int(options.num_of_threads)
+            setPrc = int(options.ratio)
+            setPrc = min(setPrc, 100)
+            setPrc = max(0, setPrc)
+            set_total = number_of_items * setPrc / 100
+            get_total = number_of_items - set_total
             v = CouchbaseClient(self._server, options.bucket, options.password,
                                 options.verbose)
-            number_of_items = (int(options.items)
-                               / int(options.num_of_threads))
+
             value = StringUtil.create_value("*", int(options.value_size))
-            for i in range(0, number_of_items):
+            set_counter = get_counter = 0
+            while (set_counter < set_total or get_counter < get_total):
                 if self.shut_down:
                     print "shut down"
                     break
                 key = "%s-%s" % (options.key_prefix, str(uuid.uuid4())[:5])
-                if random.randint(0, 100) < setPrc:
+                if random.randint(0, 100) < setPrc and set_counter < set_total:
+                    set_counter += 1
                     if options.load_json:
                         document = '{"name": "pymc-%s", "age": %s, \
                                     "index": %s}'
@@ -104,13 +110,20 @@ class SmartLoader(object):
                             print "general exception... ", e
                 else:
                     try:
+                        get_counter += 1
                         self._profile_before()
                         v.get(key)
                         self._profile_after()
                     except MemcachedTimeoutException:
                         self._stats["timeouts"] += 1
                     except Exception, e:
-                        print "general exception... ", e
+                        output = StringIO.StringIO()
+                        print >> output, e
+                        if output.getvalue().find("Not found"):
+                            pass
+                        else:
+                            print "general exception... ", e
+                        output.close()
                 self._bar.update()
             v.done()
             v = None
